@@ -14,7 +14,7 @@ def jikan(path, params=None):
     now = time.time()
     if key in _cache and now - _cache[key][0] < TTL:
         return _cache[key][1]
-    r = requests.get(API + path, params=params or {}, headers=UA, timeout=20)
+    r = requests.get(API + path, params=params or {}, headers=UA, timeout=6)
     r.raise_for_status()
     d = r.json()
     _cache[key] = (now, d)
@@ -46,13 +46,19 @@ def legal_links(title):
         ("AniList Info", f"https://anilist.co/search/anime?search={q}"),
     ]
 
+DEMO = [  # fallback tampilan kalau Jikan tak terjangkau (mis. server diblokir)
+    {"mal_id": 52991, "title": "Sousou no Frieren", "images": {"jpg": {"large_image_url": "https://cdn.myanimelist.net/images/anime/1015/138006l.jpg"}}, "score": 9.3, "episodes": 28, "type": "TV", "airing": True, "synopsis": "Kisah penyihir elf Frieren.", "genres": [{"name": "Adventure"}, {"name": "Fantasy"}]},
+    {"mal_id": 51150, "title": "Oshi no Ko", "images": {"jpg": {"large_image_url": "https://cdn.myanimelist.net/images/anime/2434/136470l.jpg"}}, "score": 8.6, "episodes": 11, "type": "TV", "airing": False, "synopsis": "Dunia idol dan perjudian hidup.", "genres": [{"name": "Drama"}]},
+    {"mal_id": 51009, "title": "Jujutsu Kaisen S2", "images": {"jpg": {"large_image_url": "https://cdn.myanimelist.net/images/anime/1792/138022l.jpg"}}, "score": 8.8, "episodes": 23, "type": "TV", "airing": False, "synopsis": "Seksi penyumpaan.", "genres": [{"name": "Action"}]},
+]
+
 @app.route("/")
 def home():
     page = request.args.get("page", 1, type=int)
     try:
         d = jikan("/seasons/now", {"limit": 24, "page": page, "sfw": "true"})
     except Exception:
-        d = {"data": [], "pagination": {"has_next_page": False}}
+        d = {"data": DEMO, "pagination": {"has_next_page": False}}
     return render_template("index.html", animes=[slim(x) for x in d["data"]],
                            page=page, has_next=d["pagination"].get("has_next_page", False),
                            section="Anime Ongoing Musim Ini")
@@ -87,7 +93,13 @@ def detail(aid):
             "trailer": (d["data"].get("trailer") or {}).get("url"),
         })
     except Exception:
-        abort(404)
+        # fallback demo kalau API tidak terjangkau
+        demo = next((x for x in DEMO if x["mal_id"] == aid), None)
+        if not demo:
+            abort(404)
+        a = slim(demo)
+        a.update({"year": 2024, "season": "summer", "status": "Currently Airing",
+                  "studio": "-", "duration": "24 min per ep", "members": None, "trailer": None})
     return render_template("detail.html", a=a, links=legal_links(a["title"]))
 
 @app.route("/healthz")
