@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ a.title }} — OtakuNime</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <a class="logo" href="/">🌸 OtakuNime</a>
+  <form action="/search" method="get" class="searchbar">
+    <input type="search" name="q" placeholder="Cari anime...">
+    <button>🔍</button>
+  </form>
+</header>
+
+<main class="detail">
+  <div class="hero">
+    {% if a.img %}<img class="cover" src="{{ a.img }}" alt="{{ a.title }}">{% endif %}
+    <div class="info">
+      <h1>{{ a.title }}</h1>
+      <p class="tags">
+        {% if a.score %}<span class="chip">★ {{ a.score }}</span>{% endif %}
+        {% if a.type %}<span class="chip">{{ a.type }}</span>{% endif %}
+        {% if a.episodes %}<span class="chip">{{ a.episodes }} episode</span>{% endif %}
+        {% if a.status %}<span class="chip">{{ a.status }}</span>{% endif %}
+        {% if a.season %}<span class="chip">{{ a.season|capitalize }} {{ a.year }}</span>{% endif %}
+      </p>
+      <p><b>Genre:</b> {{ a.genres or '-' }}<br>
+         <b>Studio:</b> {{ a.studio or '-' }}<br>
+         <b>Durasi:</b> {{ a.duration or '-' }}</p>
+      {% if a.synopsis %}<p class="syn">{{ a.synopsis[:600] }}{% if a.synopsis|length > 600 %}...{% endif %}</p>{% endif %}
+      {% if a.trailer %}<p><a class="btn" href="{{ a.trailer }}" target="_blank" rel="noopener">▶ Tonton Trailer</a></p>{% endif %}
+    </div>
+  </div>
+
+  <h2>📺 Nonton di platform resmi</h2>
+  <div class="links">
+    {% for name, url in links %}
+    <a class="btn" href="{{ url }}" target="_blank" rel="noopener">{{ name }}</a>
+    {% endfor %}
+  </div>
+</main>
+
+<footer>Data © Jikan/MyAnimeList · nonton via platform resmi</footer>
+</body>
+</html>

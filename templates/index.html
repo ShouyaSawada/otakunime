@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OtakuNime — Nonton Anime</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <a class="logo" href="/">🌸 OtakuNime</a>
+  <form action="/search" method="get" class="searchbar">
+    <input type="search" name="q" placeholder="Cari anime..." value="{{ q or '' }}">
+    <button>🔍</button>
+  </form>
+</header>
+
+<main>
+  <h2>{{ section }}</h2>
+
+  {% if animes %}
+  <div class="grid">
+    {% for a in animes %}
+    <a class="card" href="/anime/{{ a.id }}">
+      <div class="thumb">
+        {% if a.img %}<img loading="lazy" src="{{ a.img }}" alt="{{ a.title }}">{% endif %}
+        {% if a.score %}<span class="badge">★ {{ a.score }}</span>{% endif %}
+        {% if a.airing %}<span class="badge onair">ON AIR</span>{% endif %}
+      </div>
+      <div class="meta">
+        <div class="title">{{ a.title[:42] }}</div>
+        <div class="sub">{% if a.type %}{{ a.type }}{% endif %}{% if a.episodes %} · {{ a.episodes }} eps{% endif %}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <nav class="pager">
+    {% if page > 1 %}<a href="?page={{ page - 1 }}{% if q %}&q={{ q }}{% endif %}">← Sebelumnya</a>{% endif %}
+    <span>Hal {{ page }}</span>
+    {% if has_next %}<a href="?page={{ page + 1 }}{% if q %}&q={{ q }}{% endif %}">Selanjutnya →</a>{% endif %}
+  </nav>
+  {% else %}
+  <p class="empty">Gak ada hasil. Coba kata kunci lain 🌸</p>
+  {% endif %}
+</main>
+
+<footer>Data © Jikan/MyAnimeList · nonton via platform resmi</footer>
+</body>
+</html>
